@@ -3,11 +3,15 @@ package main
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"go-proton/atomic/swap"
 	"go-proton/atomic/swap/bitcoin"
 	"go-proton/core/accounts"
 	"go-proton/core/storage"
 	"strconv"
+
+	"github.com/btcsuite/btcd/rpcclient"
 
 	"gopkg.in/urfave/cli.v1"
 )
@@ -77,7 +81,13 @@ func sell(ctx *cli.Context) error {
 	switch tokenSell {
 	case accounts.Bitcoin:
 		timeout = defaultTimeoutBitcoin
-		exchanger, err = bitcoin.New(nil, priv)
+		exchanger, err = bitcoin.New(&rpcclient.ConnConfig{
+			Host:         cfg.Bitcoin.Host,
+			User:         cfg.Bitcoin.User,
+			Pass:         cfg.Bitcoin.Pass,
+			HTTPPostMode: true,
+			DisableTLS:   true,
+		}, priv)
 		if err != nil {
 			return err
 		}
@@ -85,6 +95,13 @@ func sell(ctx *cli.Context) error {
 		timeout = defaultTimeoutEthereum
 	}
 
-	exchanger.Send(buyer, amount, hash, timeout)
+	txHash, err := exchanger.Send(buyer, amount, hash, timeout)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Swap:\n")
+	fmt.Printf("TxHash: %v\n", hex.EncodeToString(txHash))
+	fmt.Printf("Secret: %v\n", hex.EncodeToString(secret))
+	fmt.Printf("SecretHash: %v\n", hex.EncodeToString(hash))
 	return nil
 }

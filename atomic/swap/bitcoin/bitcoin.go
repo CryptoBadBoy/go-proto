@@ -56,6 +56,11 @@ func (ex *Exchanger) Send(recipient string, amount float64, hash []byte, blockTi
 	}
 	defer client.Shutdown()
 
+	err = client.ImportAddress(ex.EncodeAddress())
+	if err != nil {
+		panic(err)
+	}
+
 	block, err := client.GetBlockCount()
 	if err != nil {
 		return nil, err

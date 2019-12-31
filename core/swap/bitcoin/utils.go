@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"go-proton/atomic/swap"
 	"go-proton/constants"
+	"go-proton/core/swap"
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"

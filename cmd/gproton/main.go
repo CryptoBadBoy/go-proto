@@ -1,28 +1,26 @@
 package main
 
 import (
-	config "go-proton/cmd"
-	"os"
-
+	"go-proton/cmd/gproton/commands"
 	"go-proton/cmd/utils"
+	"os"
 
 	"gopkg.in/urfave/cli.v1"
 )
 
 var (
 	app = utils.NewApp("the go-proton command line interface")
-	cfg config.Config
 )
 
 func init() {
-	localConf, err := config.Load("config.json")
+	localConf, err := utils.Load("config.json")
 	if err != nil {
 		panic(err)
 	}
-	cfg = localConf
+	commands.SetConfig(localConf)
 	app.Commands = []cli.Command{
-		accountCommand,
-		swapCommand,
+		commands.AccountCommand,
+		commands.SwapCommand,
 	}
 }
 

@@ -6,6 +6,6 @@
   },
   "ethereum": {
     "host": "https://ropsten.infura.io/v3/2794a7dfbc59404789cbf01c3fc619e1",
-    "contractAddress": "0x33729bd991affb47080bde938a6f4cdfcdd713c9"
+    "contractAddress": "0x590b7C8e889C8595d61c9a491754a5D7d5a67921"
   }
 }

@@ -2,11 +2,9 @@ package bitcoin
 
 import (
 	"errors"
-	"go-proton/atomic/swap"
 	"go-proton/constants"
 	"go-proton/core/accounts"
-
-	"github.com/mr-tron/base58/base58"
+	"go-proton/core/swap"
 
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 
@@ -68,12 +66,12 @@ func (ex *Exchanger) Send(recipient string, amount float64, hash []byte, blockTi
 
 	swapExpire := block + blockTimeout
 
-	recipientAddress, err := base58.Decode(recipient)
+	recipientAddress, err := btcutil.DecodeAddress(recipient, constants.BtcChainParams)
 	if err != nil {
 		return nil, err
 	}
 
-	contract, err := atomicSwapContract(ex.AddressPubKeyHash.Hash160(), recipientAddress, swapExpire, hash)
+	contract, err := atomicSwapContract(ex.AddressPubKeyHash.Hash160(), recipientAddress.ScriptAddress(), swapExpire, hash)
 	if err != nil {
 		return nil, err
 	}

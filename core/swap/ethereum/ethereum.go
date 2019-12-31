@@ -1,13 +1,16 @@
 package ethereum
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
-	"go-proton/atomic/swap"
+	"errors"
+	"go-proton/core/swap"
 	"go-proton/utils/crypto"
 	"go-proton/utils/slice"
 	"math"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -59,14 +62,39 @@ func (ex *Exchanger) Send(recipient string, amount float64, hash []byte, blockTi
 	weiAmountFloat := new(big.Float).Mul(ethAmount, weiInEth)
 	weiAmountInt := new(big.Int)
 	transactOpts.Value, _ = weiAmountFloat.Int(weiAmountInt)
-
+	recipientAddress := common.HexToAddress(recipient)
 	expireHeight := lastBlock.Number.Add(lastBlock.Number, big.NewInt(blockTimeout))
-	tx, err := ex.contract.Lock(transactOpts, common.HexToAddress(recipient), slice.ConvertTo32(hash), expireHeight)
+
+	tx, err := ex.contract.Lock(transactOpts, recipientAddress, slice.ConvertTo32(hash), expireHeight)
 	if err != nil {
 		return nil, err
 	}
+	isPending := true
+	for isPending {
+		_, isPending, err = ex.client.TransactionByHash(ex.ctx, tx.Hash())
+		if err != nil {
+			return nil, err
+		}
+		time.Sleep(3 * time.Second)
+	}
+	logs, err := ex.contract.FilterNewSwap(&bind.FilterOpts{
+		Start:   0,
+		End:     nil,
+		Context: ex.ctx,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for logs.Next() {
+		if bytes.Compare(logs.Event.SecretHash[:], hash) != 0 ||
+			logs.Event.Sender != transactOpts.From ||
+			logs.Event.Recipient != recipientAddress {
+			continue
+		}
 
-	return tx.Hash().Bytes(), err
+		return logs.Event.RequestHash[:], nil
+	}
+	return nil, errors.New("error parse event logs")
 }
 
 func (ex *Exchanger) Receive(hash []byte, secret []byte) ([]byte, error) {

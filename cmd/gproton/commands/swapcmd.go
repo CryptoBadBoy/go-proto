@@ -118,7 +118,7 @@ func sell(ctx *cli.Context) error {
 	}
 
 	fmt.Printf("Swap sell info:\n")
-	fmt.Printf("TxHash: %v\n", hex.EncodeToString(txHash))
+	fmt.Printf("Hash: %v\n", hex.EncodeToString(txHash))
 	fmt.Printf("Secret: %v\n", hex.EncodeToString(secret))
 	fmt.Printf("SecretHash: %v\n", hex.EncodeToString(hash))
 	return nil

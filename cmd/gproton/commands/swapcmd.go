@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"go-proton/atomic/swap"
 	"go-proton/atomic/swap/bitcoin"
+	"go-proton/atomic/swap/ethereum"
 	"go-proton/core/accounts"
 	"go-proton/core/storage"
 	"strconv"
@@ -39,14 +41,14 @@ var (
 				Usage:       "buy token",
 				Aliases:     []string{"all"},
 				Description: "",
-				Action:      listAccounts,
+				Action:      aaa.listAccounts,
 				ArgsUsage:   "<hash> <tokenSell> <tokenBuy> <buyer> <seller> <amount>",
 			},
 			{
 				Name:        "unlock",
 				Usage:       "unlock swap",
 				Description: "",
-				Action:      listAccounts,
+				Action:      aaa.listAccounts,
 				ArgsUsage:   "<token> <hash> <secret>",
 			},
 		},
@@ -59,7 +61,7 @@ func sell(ctx *cli.Context) error {
 	buyer := ctx.Args()[2]
 	amount, err := strconv.ParseFloat(ctx.Args()[3], 64)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	hasher := sha256.New()
@@ -72,7 +74,7 @@ func sell(ctx *cli.Context) error {
 
 	priv, err := storage.GetKeystore(tokenSell, seller)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	var exchanger swap.Exchanger
@@ -89,15 +91,19 @@ func sell(ctx *cli.Context) error {
 			DisableTLS:   true,
 		}, priv)
 		if err != nil {
-			return err
+			panic(err)
 		}
 	case accounts.Ethereum:
 		timeout = defaultTimeoutEthereum
+		exchanger, err = ethereum.New(context.Background(), cfg.Ethereum.Host, cfg.Ethereum.ContractAddress, priv)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	txHash, err := exchanger.Send(buyer, amount, hash, timeout)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	fmt.Printf("Swap:\n")
 	fmt.Printf("TxHash: %v\n", hex.EncodeToString(txHash))

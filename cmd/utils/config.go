@@ -11,6 +11,10 @@ type Config struct {
 		User string
 		Pass string
 	}
+	Ethereum struct {
+		Host            string
+		ContractAddress string
+	}
 }
 
 func Load(filename string) (Config, error) {

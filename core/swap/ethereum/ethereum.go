@@ -65,6 +65,7 @@ func (ex *Exchanger) Send(recipient string, amount float64, hash []byte, blockTi
 	if err != nil {
 		return nil, err
 	}
+
 	return tx.Hash().Bytes(), err
 }
 

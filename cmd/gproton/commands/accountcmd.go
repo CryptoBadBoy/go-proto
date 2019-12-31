@@ -1,4 +1,4 @@
-package main
+package aaa
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	accountCommand = cli.Command{
+	AccountCommand = cli.Command{
 		Name:        "account",
 		Usage:       "Blockchain accounts",
 		Description: "",
